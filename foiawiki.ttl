@@ -1,0 +1,104 @@
+@prefix map: <#> .
+@prefix db: <> .
+@prefix vocab: <vocab/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix d2rq: <http://www.wiwiss.fu-berlin.de/suhl/bizer/D2RQ/0.1#> .
+@prefix jdbc: <http://d2rq.org/terms/jdbc/> .
+@prefix foia: <http://foiawiki.org.uk/schema/foia/> .
+
+map:database a d2rq:Database;
+	d2rq:jdbcDriver "com.mysql.jdbc.Driver";
+	d2rq:jdbcDSN "jdbc:mysql://localhost/foiawiki";
+	d2rq:username "foiawiki";
+	d2rq:password "579dVZq8BBa3XRcc";
+	jdbc:autoReconnect "true";
+	jdbc:zeroDateTimeBehavior "convertToNull";
+	.
+
+# Table publicBody
+map:PublicBodies a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "publicBody/@@publicBody.publicBodyId@@";
+	d2rq:class foia:PublicBody;
+	.
+
+map:PublicBodies__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:PublicBodies;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@publicBody.name@@";
+	.
+
+map:PublicBodies_name a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:PublicBodies;
+	d2rq:property foia:name;
+	d2rq:column "publicBody.name";
+	.
+
+# Table request
+map:InformationRequests a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "request/@@request.publicBodyId@@/@@request.requestId|urlify@@";
+	d2rq:class foia:InformationRequest;
+	.
+
+map:InformationRequests__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:InformationRequests;
+	d2rq:property rdfs:label;
+	d2rq:pattern "Information Request #@@request.publicBodyId@@/@@request.requestId@@";
+	.
+map:InformationRequests_publicBodyId a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:InformationRequests;
+	d2rq:refersToClassMap map:PublicBodies;
+	d2rq:property foia:publicBody;
+        d2rq:join "request.publicBodyId => publicBody.publicBodyId";
+	.
+
+map:InformationRequests_requestSubject a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:InformationRequests;
+	d2rq:property foia:subject;
+	d2rq:column "request.requestSubject";
+	.
+
+map:InformationRequests_responseDate a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:InformationRequests;
+	d2rq:property foia:responseDate;
+	d2rq:column "request.responseDate";
+	d2rq:datatype xsd:dateTime;
+	.
+
+map:InformationRequests_responseDocument a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:InformationRequests;
+	d2rq:property foia:responseDocument;
+	d2rq:uriColumn "request.responseDocument";
+	.
+
+map:InformationRequests_incurredCost a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:InformationRequests;
+	d2rq:property foia:incurredCost;
+	d2rq:column "request.incurredCost";
+	d2rq:datatype xsd:decimal;
+	.
+
+# Table requestTag
+map:Tags a d2rq:ClassMap;
+	d2rq:dataStorage map:database;
+	d2rq:uriPattern "tag/@@requestTag.tag|urlify@@";
+	d2rq:class foia:Tag;
+	.
+
+map:Tags__label a d2rq:PropertyBridge;
+	d2rq:belongsToClassMap map:Tags;
+	d2rq:property rdfs:label;
+	d2rq:pattern "@@requestTag.tag@@";
+	.
+
+map:Tags_requestId a d2rq:PropertyBridge;
+	d2rq:refersToClassMap map:Tags;
+	d2rq:belongsToClassMap map:InformationRequests;
+	d2rq:property foia:tag;
+	d2rq:join "requestTag.requestId => request.requestId";
+	.
+
+
